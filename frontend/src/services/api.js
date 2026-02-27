@@ -1,4 +1,4 @@
-const API_URL = "https://pdfextractor-08ka.onrender.com";
+const API_URL = "/api";
 
 export const signup = async (data) => {
   return fetch(`${API_URL}/signup`, {

@@ -1,5 +1,6 @@
-import { Link } from "react-router-dom";
 import "./landing.css";
+import { useNavigate, Link } from "react-router-dom";
+
 
 export default function Landing() {
   return (
@@ -15,8 +16,12 @@ export default function Landing() {
           </p>
 
           <div className="hero-buttons">
-            <button className="btn primary">Login</button>
-            <button className="btn secondary">Signup</button>
+            <Link to="/login">
+              <button className="btn primary">Login</button>
+            </Link>
+            <Link to="/signup">
+              <button className="btn secondary">Signup</button>
+            </Link>
           </div>
         </div>
       </div>
