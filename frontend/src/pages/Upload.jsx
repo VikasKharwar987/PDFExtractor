@@ -4,45 +4,78 @@ import "../styles/upload.css";
 
 export default function Upload() {
 
+  const [mode, setMode] = useState("single");
+
   const [title, setTitle] = useState("");
   const [issueDate, setIssueDate] = useState("");
   const [expireDate, setExpireDate] = useState("");
+
+  const [file, setFile] = useState(null);
   const [files, setFiles] = useState([]);
 
   const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  e.preventDefault();
+    const token = localStorage.getItem("token");
 
-  const token = localStorage.getItem("token");
+    const formData = new FormData();
 
-  const formData = new FormData();
+    formData.append("title", title);
+    formData.append("issue_date", issueDate);
+    formData.append("expire_date", expireDate);
 
-  formData.append("title", title);
-  formData.append("issue_date", issueDate);
-  formData.append("expire_date", expireDate);
+    if (mode === "single") {
+      formData.append("files", file);
+    } else {
+      Array.from(files).forEach((f) => {
+        formData.append("files", f);
+      });
+    }
 
-  Array.from(files).forEach((file) => {
-    formData.append("files", file);
-  });
+    await uploadCertificate(formData, token);
 
-  await uploadCertificate(formData, token);
+    alert("Upload successful!");
 
-  alert("Certificates uploaded successfully!");
-
-};
+    setTitle("");
+    setIssueDate("");
+    setExpireDate("");
+    setFile(null);
+    setFiles([]);
+  };
 
   return (
-
     <div className="upload-page">
 
       <div className="upload-card">
 
         <h2>Upload Certificates</h2>
-        <p>Add one or multiple certificates</p>
+
+        {/* Mode Switch Buttons */}
+
+        <div className="upload-mode">
+
+          <button
+            className={mode === "single" ? "mode-btn active" : "mode-btn"}
+            onClick={() => setMode("single")}
+            type="button"
+          >
+            Single Upload
+          </button>
+
+          <button
+            className={mode === "bulk" ? "mode-btn active" : "mode-btn"}
+            onClick={() => setMode("bulk")}
+            type="button"
+          >
+            Bulk Upload
+          </button>
+
+        </div>
 
         <form onSubmit={handleSubmit}>
 
           <div className="form-group">
+
             <label>Certificate Title</label>
 
             <input
@@ -58,6 +91,7 @@ export default function Upload() {
           <div className="row">
 
             <div className="form-group">
+
               <label>Issue Date</label>
 
               <input
@@ -70,6 +104,7 @@ export default function Upload() {
             </div>
 
             <div className="form-group">
+
               <label>Expiry Date</label>
 
               <input
@@ -83,23 +118,47 @@ export default function Upload() {
 
           </div>
 
+          {/* File Upload Section */}
+
           <div className="form-group">
 
-            <label>Upload Certificates</label>
+            <label>
+              {mode === "single"
+                ? "Upload Certificate"
+                : "Upload Multiple Certificates"}
+            </label>
 
             <div className="file-upload">
 
-              <input
-                type="file"
-                multiple
-                required
-                onChange={(e) => setFiles(e.target.files)}
-              />
+              {mode === "single" ? (
+
+                <input
+                  type="file"
+                  required
+                  onChange={(e) => setFile(e.target.files[0])}
+                />
+
+              ) : (
+
+                <input
+                  type="file"
+                  multiple
+                  required
+                  onChange={(e) => setFiles(e.target.files)}
+                />
+
+              )}
 
               <span>
-                {files.length > 0
+
+                {mode === "single"
+                  ? file
+                    ? file.name
+                    : "Click to select certificate"
+                  : files.length > 0
                   ? `${files.length} files selected`
-                  : "Click to select certificate files"}
+                  : "Click to select multiple certificates"}
+
               </span>
 
             </div>
@@ -107,7 +166,7 @@ export default function Upload() {
           </div>
 
           <button type="submit" className="upload-btn">
-            Upload Certificates
+            Upload
           </button>
 
         </form>
@@ -115,6 +174,5 @@ export default function Upload() {
       </div>
 
     </div>
-
   );
 }
