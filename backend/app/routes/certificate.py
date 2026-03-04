@@ -57,3 +57,22 @@ def get_certificates(
     user = Depends(get_current_user)
 ):
     return db.query(Certificate).filter(Certificate.owner_id == user.id).all()
+
+@router.delete("/certificates/{cert_id}")
+def delete_certificate(
+    cert_id: int,
+    db: Session = Depends(get_db),
+    user = Depends(get_current_user)
+):
+    cert = db.query(Certificate).filter(
+        Certificate.id == cert_id,
+        Certificate.owner_id == user.id
+    ).first()
+
+    if not cert:
+        raise HTTPException(status_code=404, detail="Certificate not found")
+
+    db.delete(cert)
+    db.commit()
+
+    return {"message": "Certificate deleted successfully"}

@@ -33,3 +33,12 @@ export const getCertificates = async (token) => {
     },
   });
 };
+
+export const deleteCertificate = (id, token) => {
+  return fetch(`http://localhost:8000/certificates/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};

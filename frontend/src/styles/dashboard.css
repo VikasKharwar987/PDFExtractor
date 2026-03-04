@@ -225,3 +225,16 @@
   border-radius: 18px;
   color: var(--text-muted);
 }
+
+.action-btn.delete{
+  background:#ff4d4d;
+  color:white;
+  border:none;
+  padding:6px 12px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.action-btn.delete:hover{
+  background:#e60000;
+}
