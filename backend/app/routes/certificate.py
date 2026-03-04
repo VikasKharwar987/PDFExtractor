@@ -8,6 +8,8 @@ from ..models import Certificate
 from ..dependencies import get_current_user
 from ..schemas import CertificateResponse
 from typing import List
+from ..utils.ocr import extract_text_from_url
+from ..utils.extractor import extract_certificate_info
 
 router = APIRouter()
 
@@ -37,6 +39,21 @@ async def create_certificate(
             )
 
             file_url = upload_result["secure_url"]
+
+            # OCR text extraction
+            text = extract_text_from_url(file_url)
+
+            # Extract certificate fields
+            data = extract_certificate_info(text)
+
+            if data["title"]:
+                title = data["title"]
+
+            if data["issue_date"]:
+                issue_date = data["issue_date"]
+
+            if data["expire_date"]:
+                expire_date = data["expire_date"]
 
             cert = Certificate(
                 title=title,
