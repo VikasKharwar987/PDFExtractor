@@ -7,6 +7,7 @@ from ..database import get_db
 from ..models import Certificate
 from ..dependencies import get_current_user
 from ..schemas import CertificateResponse
+from typing import List
 
 router = APIRouter()
 
@@ -15,41 +16,48 @@ async def create_certificate(
     title: str = Form(...),
     issue_date: date = Form(...),
     expire_date: date = Form(...),
-    file: UploadFile = File(...),
+    files: List[UploadFile] = File(...),
     db: Session = Depends(get_db),
     user = Depends(get_current_user)
 ):
 
-    try:
-        upload_result = cloudinary.uploader.upload(
-            file.file,
-            resource_type="image",
-            use_filename=True,
-            unique_filename=False,
-            filename_override=file.filename,
-            access_mode="public"
-    )
+    uploaded_certificates = []
 
-        file_url = upload_result["secure_url"]
+    try:
+
+        for file in files:
+
+            upload_result = cloudinary.uploader.upload(
+                file.file,
+                resource_type="auto",
+                use_filename=True,
+                unique_filename=False,
+                filename_override=file.filename,
+                access_mode="public"
+            )
+
+            file_url = upload_result["secure_url"]
+
+            cert = Certificate(
+                title=title,
+                file_url=file_url,
+                original_filename=file.filename,
+                issue_date=issue_date,
+                expire_date=expire_date,
+                owner_id=user.id
+            )
+
+            db.add(cert)
+            uploaded_certificates.append(cert)
+
+        db.commit()
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-    cert = Certificate(
-        title=title,
-        file_url=file_url,
-        original_filename=file.filename,
-        issue_date=issue_date,
-        expire_date=expire_date,
-        owner_id=user.id
-    )
-
-    db.add(cert)
-    db.commit()
-    db.refresh(cert)
-
-    return {"message": "Certificate uploaded successfully"}
-
+    return {
+        "message": f"{len(uploaded_certificates)} certificates uploaded successfully"
+    }
 
 @router.get("/certificates", response_model=list[CertificateResponse])
 def get_certificates(
